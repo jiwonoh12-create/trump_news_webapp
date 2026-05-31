@@ -1,0 +1,191 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); }
+.header { display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 0 1rem; border-bottom: 0.5px solid var(--color-border-tertiary); margin-bottom: 1.25rem; }
+.title { font-size: 18px; font-weight: 500; color: var(--color-text-primary); }
+.subtitle { font-size: 13px; color: var(--color-text-secondary); margin-top: 2px; }
+.controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 1.25rem; }
+.cat-btn { font-size: 13px; padding: 5px 14px; border-radius: 99px; border: 0.5px solid var(--color-border-secondary); background: transparent; color: var(--color-text-secondary); cursor: pointer; transition: all 0.15s; }
+.cat-btn:hover { background: var(--color-background-secondary); }
+.cat-btn.active { background: var(--color-background-primary); color: var(--color-text-primary); border-color: var(--color-border-primary); font-weight: 500; }
+.cat-btn.pol.active { background: #EEEDFE; color: #3C3489; border-color: #AFA9EC; }
+.cat-btn.eco.active { background: #E1F5EE; color: #085041; border-color: #5DCAA5; }
+.cat-btn.dip.active { background: #FAEEDA; color: #633806; border-color: #EF9F27; }
+.refresh-btn { margin-left: auto; font-size: 13px; padding: 5px 14px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-secondary); background: transparent; color: var(--color-text-secondary); cursor: pointer; display: flex; align-items: center; gap: 6px; }
+.refresh-btn:hover { background: var(--color-background-secondary); }
+.refresh-btn.loading i { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 1.25rem; }
+.stat { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 12px; }
+.stat-label { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 4px; }
+.stat-value { font-size: 22px; font-weight: 500; color: var(--color-text-primary); }
+.news-list { display: flex; flex-direction: column; gap: 8px; }
+.news-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; transition: border-color 0.15s; }
+.news-card:hover { border-color: var(--color-border-secondary); }
+.card-top { display: flex; align-items: flex-start; gap: 10px; }
+.cat-badge { font-size: 11px; font-weight: 500; padding: 3px 8px; border-radius: 99px; white-space: nowrap; flex-shrink: 0; margin-top: 2px; }
+.badge-pol { background: #EEEDFE; color: #3C3489; }
+.badge-eco { background: #E1F5EE; color: #085041; }
+.badge-dip { background: #FAEEDA; color: #633806; }
+.news-title { font-size: 14px; font-weight: 500; color: var(--color-text-primary); line-height: 1.5; flex: 1; }
+.card-bottom { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 0.5px solid var(--color-border-tertiary); }
+.news-source { font-size: 12px; color: var(--color-text-tertiary); }
+.news-link { font-size: 12px; color: var(--color-text-info); text-decoration: none; display: flex; align-items: center; gap: 4px; }
+.news-link:hover { text-decoration: underline; }
+.empty { text-align: center; padding: 3rem 1rem; color: var(--color-text-secondary); font-size: 14px; }
+.error-msg { background: var(--color-background-danger); border: 0.5px solid var(--color-border-danger); border-radius: var(--border-radius-md); padding: 1rem 1.25rem; font-size: 14px; color: var(--color-text-danger); margin-bottom: 1rem; }
+.timestamp { font-size: 12px; color: var(--color-text-tertiary); }
+</style>
+
+<h2 class="sr-only">Trump 뉴스 클리핑 — 최신 Top 30개를 정치/경제/외교로 분류해서 보여주는 웹앱</h2>
+
+<div class="header">
+  <div>
+    <div class="title">Trump News Briefing</div>
+    <div class="subtitle" id="timestamp">불러오는 중...</div>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="stat"><div class="stat-label">전체</div><div class="stat-value" id="s-total">—</div></div>
+  <div class="stat"><div class="stat-label">정치</div><div class="stat-value" id="s-pol">—</div></div>
+  <div class="stat"><div class="stat-label">경제</div><div class="stat-value" id="s-eco">—</div></div>
+  <div class="stat"><div class="stat-label">외교</div><div class="stat-value" id="s-dip">—</div></div>
+</div>
+
+<div class="controls">
+  <button class="cat-btn active" data-cat="all" onclick="filterCat('all')">전체</button>
+  <button class="cat-btn pol" data-cat="pol" onclick="filterCat('pol')">정치</button>
+  <button class="cat-btn eco" data-cat="eco" onclick="filterCat('eco')">경제</button>
+  <button class="cat-btn dip" data-cat="dip" onclick="filterCat('dip')">외교</button>
+  <button class="refresh-btn" id="refresh-btn" onclick="loadNews()">
+    <i class="ti ti-refresh" aria-hidden="true"></i> 새로고침
+  </button>
+</div>
+
+<div id="error-area"></div>
+<div class="news-list" id="news-list"></div>
+
+<script>
+const PROXY = 'https://api.allorigins.win/get?url=';
+const RSS_URL = encodeURIComponent('https://news.google.com/rss/search?q=Trump&hl=en-US&gl=US&ceid=US:en&num=30');
+
+const POL_KW = ['congress','senate','republican','democrat','election','vote','impeach','white house','administration','supreme court','legislation','bill','law','president','gop','party','campaign','rally','speech','executive order'];
+const ECO_KW = ['economy','trade','tariff','market','stock','gdp','inflation','tax','budget','deficit','dollar','fed','interest rate','sanction','export','import','business','jobs','unemployment','wall street','oil','energy','crypto','bank'];
+const DIP_KW = ['china','russia','europe','nato','ukraine','iran','north korea','mexico','canada','summit','diplomat','foreign','military','war','deal','treaty','ally','middle east','israel','saudi','japan','korea','taiwan','india','un ','united nations'];
+
+let allArticles = [];
+let currentCat = 'all';
+
+function categorize(title) {
+  const t = title.toLowerCase();
+  let scores = { pol: 0, eco: 0, dip: 0 };
+  POL_KW.forEach(k => { if (t.includes(k)) scores.pol++; });
+  ECO_KW.forEach(k => { if (t.includes(k)) scores.eco++; });
+  DIP_KW.forEach(k => { if (t.includes(k)) scores.dip++; });
+  const max = Math.max(scores.pol, scores.eco, scores.dip);
+  if (max === 0) return 'pol';
+  return Object.keys(scores).find(k => scores[k] === max);
+}
+
+function extractSource(title) {
+  const match = title.match(/ - ([^-]+)$/);
+  return match ? match[1].trim() : '';
+}
+
+function cleanTitle(title) {
+  return title.replace(/ - [^-]+$/, '').trim();
+}
+
+function parseRSS(xml) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(xml, 'text/xml');
+  const items = doc.querySelectorAll('item');
+  const results = [];
+  items.forEach((item, i) => {
+    if (i >= 30) return;
+    const rawTitle = item.querySelector('title')?.textContent || '';
+    const link = item.querySelector('link')?.textContent || '';
+    const pubDate = item.querySelector('pubDate')?.textContent || '';
+    results.push({
+      title: cleanTitle(rawTitle),
+      source: extractSource(rawTitle),
+      link,
+      pubDate,
+      cat: categorize(rawTitle)
+    });
+  });
+  return results;
+}
+
+function renderCards(articles) {
+  const list = document.getElementById('news-list');
+  if (!articles.length) {
+    list.innerHTML = '<div class="empty">해당 카테고리 뉴스가 없습니다.</div>';
+    return;
+  }
+  list.innerHTML = articles.map(a => {
+    const badgeClass = { pol: 'badge-pol', eco: 'badge-eco', dip: 'badge-dip' }[a.cat];
+    const label = { pol: '정치', eco: '경제', dip: '외교' }[a.cat];
+    const dateStr = a.pubDate ? new Date(a.pubDate).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+    return `<div class="news-card">
+      <div class="card-top">
+        <span class="cat-badge ${badgeClass}">${label}</span>
+        <span class="news-title">${a.title}</span>
+      </div>
+      <div class="card-bottom">
+        <span class="news-source">${a.source}${dateStr ? ' · ' + dateStr : ''}</span>
+        <a class="news-link" href="${a.link}" target="_blank">기사 보기 <i class="ti ti-external-link" style="font-size:12px" aria-hidden="true"></i></a>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterCat(cat) {
+  currentCat = cat;
+  document.querySelectorAll('.cat-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.cat === cat);
+  });
+  const filtered = cat === 'all' ? allArticles : allArticles.filter(a => a.cat === cat);
+  renderCards(filtered);
+}
+
+function updateStats(articles) {
+  document.getElementById('s-total').textContent = articles.length;
+  document.getElementById('s-pol').textContent = articles.filter(a => a.cat === 'pol').length;
+  document.getElementById('s-eco').textContent = articles.filter(a => a.cat === 'eco').length;
+  document.getElementById('s-dip').textContent = articles.filter(a => a.cat === 'dip').length;
+}
+
+async function loadNews() {
+  const btn = document.getElementById('refresh-btn');
+  const errArea = document.getElementById('error-area');
+  btn.classList.add('loading');
+  errArea.innerHTML = '';
+  document.getElementById('news-list').innerHTML = '<div class="empty">뉴스를 불러오는 중...</div>';
+
+  try {
+    const res = await fetch(PROXY + RSS_URL);
+    const json = await res.json();
+    const articles = parseRSS(json.contents);
+
+    if (!articles.length) throw new Error('기사를 찾을 수 없습니다.');
+
+    allArticles = articles;
+    updateStats(articles);
+
+    const now = new Date().toLocaleString('ko-KR', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    document.getElementById('timestamp').textContent = `최종 업데이트: ${now} · 총 ${articles.length}건`;
+
+    filterCat(currentCat);
+  } catch (e) {
+    errArea.innerHTML = `<div class="error-msg"><i class="ti ti-alert-circle" aria-hidden="true"></i> 뉴스를 불러오지 못했습니다. 잠시 후 다시 시도해주세요. (${e.message})</div>`;
+    document.getElementById('news-list').innerHTML = '';
+  } finally {
+    btn.classList.remove('loading');
+  }
+}
+
+loadNews();
+</script>
