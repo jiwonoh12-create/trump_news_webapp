@@ -1,191 +1,237 @@
-
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trump News Briefing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: var(--font-sans); }
-.header { display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 0 1rem; border-bottom: 0.5px solid var(--color-border-tertiary); margin-bottom: 1.25rem; }
-.title { font-size: 18px; font-weight: 500; color: var(--color-text-primary); }
-.subtitle { font-size: 13px; color: var(--color-text-secondary); margin-top: 2px; }
-.controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 1.25rem; }
-.cat-btn { font-size: 13px; padding: 5px 14px; border-radius: 99px; border: 0.5px solid var(--color-border-secondary); background: transparent; color: var(--color-text-secondary); cursor: pointer; transition: all 0.15s; }
-.cat-btn:hover { background: var(--color-background-secondary); }
-.cat-btn.active { background: var(--color-background-primary); color: var(--color-text-primary); border-color: var(--color-border-primary); font-weight: 500; }
-.cat-btn.pol.active { background: #EEEDFE; color: #3C3489; border-color: #AFA9EC; }
-.cat-btn.eco.active { background: #E1F5EE; color: #085041; border-color: #5DCAA5; }
-.cat-btn.dip.active { background: #FAEEDA; color: #633806; border-color: #EF9F27; }
-.refresh-btn { margin-left: auto; font-size: 13px; padding: 5px 14px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-secondary); background: transparent; color: var(--color-text-secondary); cursor: pointer; display: flex; align-items: center; gap: 6px; }
-.refresh-btn:hover { background: var(--color-background-secondary); }
-.refresh-btn.loading i { animation: spin 1s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
-.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 1.25rem; }
-.stat { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 12px; }
-.stat-label { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 4px; }
-.stat-value { font-size: 22px; font-weight: 500; color: var(--color-text-primary); }
-.news-list { display: flex; flex-direction: column; gap: 8px; }
-.news-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; transition: border-color 0.15s; }
-.news-card:hover { border-color: var(--color-border-secondary); }
-.card-top { display: flex; align-items: flex-start; gap: 10px; }
-.cat-badge { font-size: 11px; font-weight: 500; padding: 3px 8px; border-radius: 99px; white-space: nowrap; flex-shrink: 0; margin-top: 2px; }
-.badge-pol { background: #EEEDFE; color: #3C3489; }
-.badge-eco { background: #E1F5EE; color: #085041; }
-.badge-dip { background: #FAEEDA; color: #633806; }
-.news-title { font-size: 14px; font-weight: 500; color: var(--color-text-primary); line-height: 1.5; flex: 1; }
-.card-bottom { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 0.5px solid var(--color-border-tertiary); }
-.news-source { font-size: 12px; color: var(--color-text-tertiary); }
-.news-link { font-size: 12px; color: var(--color-text-info); text-decoration: none; display: flex; align-items: center; gap: 4px; }
-.news-link:hover { text-decoration: underline; }
-.empty { text-align: center; padding: 3rem 1rem; color: var(--color-text-secondary); font-size: 14px; }
-.error-msg { background: var(--color-background-danger); border: 0.5px solid var(--color-border-danger); border-radius: var(--border-radius-md); padding: 1rem 1.25rem; font-size: 14px; color: var(--color-text-danger); margin-bottom: 1rem; }
-.timestamp { font-size: 12px; color: var(--color-text-tertiary); }
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --surface2: #1c1c26;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.13);
+    --text: #f0efe8;
+    --muted: #7a7a8c;
+    --accent: #e8c97a;
+    --pol: #7b8cde;
+    --eco: #5ec98e;
+    --dip: #e87a6a;
+    --pol-bg: rgba(123,140,222,0.1);
+    --eco-bg: rgba(94,201,142,0.1);
+    --dip-bg: rgba(232,122,106,0.1);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-weight: 300; min-height: 100vh; }
+  .topbar {
+    border-bottom: 0.5px solid var(--border);
+    padding: 0 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 56px; position: sticky; top: 0;
+    background: rgba(10,10,15,0.92); backdrop-filter: blur(12px); z-index: 100;
+  }
+  .logo { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--text); }
+  .logo span { color: var(--accent); }
+  .topbar-right { display: flex; align-items: center; gap: 12px; }
+  .timestamp { font-size: 12px; color: var(--muted); }
+  .refresh-btn {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; padding: 6px 14px; border-radius: 99px;
+    border: 0.5px solid var(--border2); background: transparent;
+    color: var(--text); cursor: pointer; transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .refresh-btn:hover { background: var(--surface2); border-color: var(--accent); color: var(--accent); }
+  .refresh-btn.loading svg { animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .main { max-width: 860px; margin: 0 auto; padding: 2.5rem 2rem; }
+  .hero { margin-bottom: 2.5rem; }
+  .hero-title { font-family: 'Playfair Display', serif; font-size: clamp(32px,5vw,48px); line-height: 1.1; letter-spacing: -1px; margin-bottom: 0.5rem; }
+  .hero-title em { color: var(--accent); font-style: italic; }
+  .hero-sub { font-size: 14px; color: var(--muted); }
+  .stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 2rem; }
+  .stat { background: var(--surface); border: 0.5px solid var(--border); border-radius: 12px; padding: 16px; }
+  .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
+  .stat-value { font-size: 28px; font-weight: 500; color: var(--text); line-height: 1; }
+  .stat.pol .stat-value { color: var(--pol); }
+  .stat.eco .stat-value { color: var(--eco); }
+  .stat.dip .stat-value { color: var(--dip); }
+  .filters { display: flex; gap: 6px; margin-bottom: 1.5rem; flex-wrap: wrap; }
+  .filter-btn {
+    font-size: 13px; padding: 7px 18px; border-radius: 99px;
+    border: 0.5px solid var(--border2); background: transparent;
+    color: var(--muted); cursor: pointer; transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .filter-btn:hover { color: var(--text); }
+  .filter-btn.active { background: var(--surface2); color: var(--text); }
+  .filter-btn.active.pol { color: var(--pol); border-color: var(--pol); background: var(--pol-bg); }
+  .filter-btn.active.eco { color: var(--eco); border-color: var(--eco); background: var(--eco-bg); }
+  .filter-btn.active.dip { color: var(--dip); border-color: var(--dip); background: var(--dip-bg); }
+  .news-list { display: flex; flex-direction: column; gap: 1px; }
+  .news-card {
+    background: var(--surface); padding: 1.1rem 1.25rem;
+    display: flex; align-items: flex-start; gap: 14px;
+    transition: background 0.15s; border-left: 2px solid transparent;
+    animation: fadeIn 0.3s ease;
+  }
+  .news-list .news-card:first-child { border-radius: 12px 12px 0 0; }
+  .news-list .news-card:last-child { border-radius: 0 0 12px 12px; }
+  .news-list .news-card:only-child { border-radius: 12px; }
+  .news-card:hover { background: var(--surface2); }
+  .news-card.pol:hover { border-left-color: var(--pol); }
+  .news-card.eco:hover { border-left-color: var(--eco); }
+  .news-card.dip:hover { border-left-color: var(--dip); }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .card-num { font-size: 11px; color: var(--muted); min-width: 22px; padding-top: 3px; font-weight: 500; }
+  .card-body { flex: 1; min-width: 0; }
+  .card-title { font-size: 14px; font-weight: 400; line-height: 1.55; color: var(--text); margin-bottom: 8px; text-decoration: none; display: block; }
+  .card-title:hover { color: var(--accent); }
+  .card-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .badge { font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: 99px; letter-spacing: 0.4px; text-transform: uppercase; }
+  .badge.pol { background: var(--pol-bg); color: var(--pol); }
+  .badge.eco { background: var(--eco-bg); color: var(--eco); }
+  .badge.dip { background: var(--dip-bg); color: var(--dip); }
+  .source { font-size: 12px; color: var(--muted); }
+  .pubdate { font-size: 12px; color: var(--muted); }
+  .divider { color: var(--border2); }
+  .error-msg { background: rgba(232,122,106,0.08); border: 0.5px solid rgba(232,122,106,0.3); border-radius: 10px; padding: 1rem 1.25rem; font-size: 13px; color: var(--dip); margin-bottom: 1.5rem; }
+  .loading-state { text-align: center; padding: 4rem 1rem; color: var(--muted); font-size: 14px; }
+  .dot-anim::after { content: '...'; animation: dots 1.2s infinite; }
+  @keyframes dots { 0%,20% { content: '.'; } 40% { content: '..'; } 60%,100% { content: '...'; } }
+  .empty { text-align: center; padding: 3rem; color: var(--muted); font-size: 14px; }
+  @media (max-width: 600px) { .main { padding: 1.5rem 1rem; } .stats { grid-template-columns: repeat(2,1fr); } .topbar { padding: 0 1rem; } }
 </style>
-
-<h2 class="sr-only">Trump 뉴스 클리핑 — 최신 Top 30개를 정치/경제/외교로 분류해서 보여주는 웹앱</h2>
-
-<div class="header">
-  <div>
-    <div class="title">Trump News Briefing</div>
-    <div class="subtitle" id="timestamp">불러오는 중...</div>
+</head>
+<body>
+<nav class="topbar">
+  <div class="logo">Trump<span>.</span>Brief</div>
+  <div class="topbar-right">
+    <span class="timestamp" id="timestamp"></span>
+    <button class="refresh-btn" id="refresh-btn" onclick="loadNews()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/>
+      </svg>
+      새로고침
+    </button>
   </div>
-</div>
-
-<div class="stats">
-  <div class="stat"><div class="stat-label">전체</div><div class="stat-value" id="s-total">—</div></div>
-  <div class="stat"><div class="stat-label">정치</div><div class="stat-value" id="s-pol">—</div></div>
-  <div class="stat"><div class="stat-label">경제</div><div class="stat-value" id="s-eco">—</div></div>
-  <div class="stat"><div class="stat-label">외교</div><div class="stat-value" id="s-dip">—</div></div>
-</div>
-
-<div class="controls">
-  <button class="cat-btn active" data-cat="all" onclick="filterCat('all')">전체</button>
-  <button class="cat-btn pol" data-cat="pol" onclick="filterCat('pol')">정치</button>
-  <button class="cat-btn eco" data-cat="eco" onclick="filterCat('eco')">경제</button>
-  <button class="cat-btn dip" data-cat="dip" onclick="filterCat('dip')">외교</button>
-  <button class="refresh-btn" id="refresh-btn" onclick="loadNews()">
-    <i class="ti ti-refresh" aria-hidden="true"></i> 새로고침
-  </button>
-</div>
-
-<div id="error-area"></div>
-<div class="news-list" id="news-list"></div>
-
+</nav>
+<main class="main">
+  <div class="hero">
+    <h1 class="hero-title">Trump News<br><em>Briefing</em></h1>
+    <p class="hero-sub">Google News 기반 · 최신 Top 30 · 정치 / 경제 / 외교 분류</p>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="stat-label">전체</div><div class="stat-value" id="s-total">—</div></div>
+    <div class="stat pol"><div class="stat-label">정치</div><div class="stat-value" id="s-pol">—</div></div>
+    <div class="stat eco"><div class="stat-label">경제</div><div class="stat-value" id="s-eco">—</div></div>
+    <div class="stat dip"><div class="stat-label">외교</div><div class="stat-value" id="s-dip">—</div></div>
+  </div>
+  <div class="filters">
+    <button class="filter-btn active" data-cat="all" onclick="filterCat('all')">전체</button>
+    <button class="filter-btn pol" data-cat="pol" onclick="filterCat('pol')">정치</button>
+    <button class="filter-btn eco" data-cat="eco" onclick="filterCat('eco')">경제</button>
+    <button class="filter-btn dip" data-cat="dip" onclick="filterCat('dip')">외교</button>
+  </div>
+  <div id="error-area"></div>
+  <div id="news-list" class="news-list"></div>
+</main>
 <script>
-const PROXY = 'https://api.allorigins.win/get?url=';
-const RSS_URL = encodeURIComponent('https://news.google.com/rss/search?q=Trump&hl=en-US&gl=US&ceid=US:en&num=30');
-
-const POL_KW = ['congress','senate','republican','democrat','election','vote','impeach','white house','administration','supreme court','legislation','bill','law','president','gop','party','campaign','rally','speech','executive order'];
-const ECO_KW = ['economy','trade','tariff','market','stock','gdp','inflation','tax','budget','deficit','dollar','fed','interest rate','sanction','export','import','business','jobs','unemployment','wall street','oil','energy','crypto','bank'];
-const DIP_KW = ['china','russia','europe','nato','ukraine','iran','north korea','mexico','canada','summit','diplomat','foreign','military','war','deal','treaty','ally','middle east','israel','saudi','japan','korea','taiwan','india','un ','united nations'];
-
-let allArticles = [];
-let currentCat = 'all';
-
-function categorize(title) {
-  const t = title.toLowerCase();
-  let scores = { pol: 0, eco: 0, dip: 0 };
-  POL_KW.forEach(k => { if (t.includes(k)) scores.pol++; });
-  ECO_KW.forEach(k => { if (t.includes(k)) scores.eco++; });
-  DIP_KW.forEach(k => { if (t.includes(k)) scores.dip++; });
-  const max = Math.max(scores.pol, scores.eco, scores.dip);
-  if (max === 0) return 'pol';
-  return Object.keys(scores).find(k => scores[k] === max);
+const PROXIES = [
+  u => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`,
+  u => `https://corsproxy.io/?${encodeURIComponent(u)}`,
+  u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
+];
+const RSS_URL = 'https://news.google.com/rss/search?q=Trump&hl=en-US&gl=US&ceid=US:en';
+const POL_KW = ['congress','senate','republican','democrat','election','vote','impeach','white house','administration','supreme court','legislation','bill','law','president','gop','party','campaign','rally','executive order','house','cabinet'];
+const ECO_KW = ['economy','trade','tariff','market','stock','gdp','inflation','tax','budget','deficit','dollar','fed','interest rate','export','import','business','jobs','unemployment','wall street','oil','energy','crypto','bank','treasury','recession','growth'];
+const DIP_KW = ['china','russia','europe','nato','ukraine','iran','north korea','mexico','canada','summit','diplomat','foreign','military','war','deal','treaty','ally','middle east','israel','saudi','japan','korea','taiwan','india','united nations','minister','meeting','talks'];
+let allArticles = [], currentCat = 'all';
+function categorize(t) {
+  const s = { pol:0, eco:0, dip:0 }, l = t.toLowerCase();
+  POL_KW.forEach(k => { if(l.includes(k)) s.pol++; });
+  ECO_KW.forEach(k => { if(l.includes(k)) s.eco++; });
+  DIP_KW.forEach(k => { if(l.includes(k)) s.dip++; });
+  const max = Math.max(s.pol, s.eco, s.dip);
+  return max === 0 ? 'pol' : Object.keys(s).find(k => s[k] === max);
 }
-
-function extractSource(title) {
-  const match = title.match(/ - ([^-]+)$/);
-  return match ? match[1].trim() : '';
-}
-
-function cleanTitle(title) {
-  return title.replace(/ - [^-]+$/, '').trim();
-}
-
+function cleanTitle(t) { return t.replace(/ - [^-]+$/, '').trim(); }
+function extractSource(t) { const m = t.match(/ - ([^-]+)$/); return m ? m[1].trim() : ''; }
 function parseRSS(xml) {
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(xml, 'text/xml');
-  const items = doc.querySelectorAll('item');
-  const results = [];
-  items.forEach((item, i) => {
-    if (i >= 30) return;
-    const rawTitle = item.querySelector('title')?.textContent || '';
-    const link = item.querySelector('link')?.textContent || '';
-    const pubDate = item.querySelector('pubDate')?.textContent || '';
-    results.push({
-      title: cleanTitle(rawTitle),
-      source: extractSource(rawTitle),
-      link,
-      pubDate,
-      cat: categorize(rawTitle)
-    });
+  const doc = new DOMParser().parseFromString(xml, 'text/xml');
+  return [...doc.querySelectorAll('item')].slice(0,30).map(item => {
+    const raw = item.querySelector('title')?.textContent || '';
+    return { title: cleanTitle(raw), source: extractSource(raw), link: item.querySelector('link')?.textContent || '', pubDate: item.querySelector('pubDate')?.textContent || '', cat: categorize(raw) };
   });
-  return results;
 }
-
+async function fetchWithProxy(fn) {
+  const res = await fetch(fn(RSS_URL));
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data = await res.json();
+  const c = data.contents || data;
+  if (typeof c !== 'string') throw new Error('Invalid');
+  return c;
+}
+async function fetchNews() {
+  for (const fn of PROXIES) {
+    try { const xml = await fetchWithProxy(fn); const a = parseRSS(xml); if(a.length) return a; } catch(e) { console.warn(e.message); }
+  }
+  throw new Error('모든 프록시 연결 실패');
+}
+function timeAgo(d) {
+  if (!d) return '';
+  const m = (Date.now() - new Date(d)) / 60000;
+  if (m < 60) return `${Math.round(m)}분 전`;
+  if (m < 1440) return `${Math.round(m/60)}시간 전`;
+  return `${Math.round(m/1440)}일 전`;
+}
 function renderCards(articles) {
   const list = document.getElementById('news-list');
-  if (!articles.length) {
-    list.innerHTML = '<div class="empty">해당 카테고리 뉴스가 없습니다.</div>';
-    return;
-  }
-  list.innerHTML = articles.map(a => {
-    const badgeClass = { pol: 'badge-pol', eco: 'badge-eco', dip: 'badge-dip' }[a.cat];
-    const label = { pol: '정치', eco: '경제', dip: '외교' }[a.cat];
-    const dateStr = a.pubDate ? new Date(a.pubDate).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
-    return `<div class="news-card">
-      <div class="card-top">
-        <span class="cat-badge ${badgeClass}">${label}</span>
-        <span class="news-title">${a.title}</span>
+  if (!articles.length) { list.innerHTML = '<div class="empty">해당 카테고리 뉴스가 없습니다.</div>'; return; }
+  const label = { pol:'정치', eco:'경제', dip:'외교' };
+  list.innerHTML = articles.map((a,i) => `<div class="news-card ${a.cat}">
+    <span class="card-num">${String(i+1).padStart(2,'0')}</span>
+    <div class="card-body">
+      <a class="card-title" href="${a.link}" target="_blank">${a.title}</a>
+      <div class="card-meta">
+        <span class="badge ${a.cat}">${label[a.cat]}</span>
+        ${a.source ? `<span class="source">${a.source}</span>` : ''}
+        ${timeAgo(a.pubDate) ? `<span class="divider">·</span><span class="pubdate">${timeAgo(a.pubDate)}</span>` : ''}
       </div>
-      <div class="card-bottom">
-        <span class="news-source">${a.source}${dateStr ? ' · ' + dateStr : ''}</span>
-        <a class="news-link" href="${a.link}" target="_blank">기사 보기 <i class="ti ti-external-link" style="font-size:12px" aria-hidden="true"></i></a>
-      </div>
-    </div>`;
-  }).join('');
+    </div>
+  </div>`).join('');
 }
-
 function filterCat(cat) {
   currentCat = cat;
-  document.querySelectorAll('.cat-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.cat === cat);
-  });
-  const filtered = cat === 'all' ? allArticles : allArticles.filter(a => a.cat === cat);
-  renderCards(filtered);
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.cat === cat));
+  renderCards(cat === 'all' ? allArticles : allArticles.filter(a => a.cat === cat));
 }
-
-function updateStats(articles) {
-  document.getElementById('s-total').textContent = articles.length;
-  document.getElementById('s-pol').textContent = articles.filter(a => a.cat === 'pol').length;
-  document.getElementById('s-eco').textContent = articles.filter(a => a.cat === 'eco').length;
-  document.getElementById('s-dip').textContent = articles.filter(a => a.cat === 'dip').length;
+function updateStats(a) {
+  document.getElementById('s-total').textContent = a.length;
+  document.getElementById('s-pol').textContent = a.filter(x=>x.cat==='pol').length;
+  document.getElementById('s-eco').textContent = a.filter(x=>x.cat==='eco').length;
+  document.getElementById('s-dip').textContent = a.filter(x=>x.cat==='dip').length;
 }
-
 async function loadNews() {
   const btn = document.getElementById('refresh-btn');
-  const errArea = document.getElementById('error-area');
-  btn.classList.add('loading');
-  errArea.innerHTML = '';
-  document.getElementById('news-list').innerHTML = '<div class="empty">뉴스를 불러오는 중...</div>';
-
+  const err = document.getElementById('error-area');
+  const list = document.getElementById('news-list');
+  btn.classList.add('loading'); err.innerHTML = '';
+  list.innerHTML = '<div class="loading-state"><span class="dot-anim">뉴스 불러오는 중</span></div>';
   try {
-    const res = await fetch(PROXY + RSS_URL);
-    const json = await res.json();
-    const articles = parseRSS(json.contents);
-
-    if (!articles.length) throw new Error('기사를 찾을 수 없습니다.');
-
-    allArticles = articles;
-    updateStats(articles);
-
-    const now = new Date().toLocaleString('ko-KR', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-    document.getElementById('timestamp').textContent = `최종 업데이트: ${now} · 총 ${articles.length}건`;
-
+    allArticles = await fetchNews();
+    updateStats(allArticles);
+    const now = new Date().toLocaleString('ko-KR',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+    document.getElementById('timestamp').textContent = now + ' 업데이트';
     filterCat(currentCat);
-  } catch (e) {
-    errArea.innerHTML = `<div class="error-msg"><i class="ti ti-alert-circle" aria-hidden="true"></i> 뉴스를 불러오지 못했습니다. 잠시 후 다시 시도해주세요. (${e.message})</div>`;
-    document.getElementById('news-list').innerHTML = '';
-  } finally {
-    btn.classList.remove('loading');
-  }
+  } catch(e) {
+    err.innerHTML = `<div class="error-msg">⚠ ${e.message}</div>`;
+    list.innerHTML = '';
+  } finally { btn.classList.remove('loading'); }
 }
-
 loadNews();
 </script>
+</body>
+</html>
